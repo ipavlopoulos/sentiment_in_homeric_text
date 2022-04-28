@@ -1,5 +1,4 @@
 import tensorflow as tf
-#from tokenizers import BertWordPieceTokenizer
 from transformers import BertTokenizer, TFBertModel, BertConfig
 from tqdm import tqdm
 
@@ -45,8 +44,10 @@ class GreekBERT_IB1S():
                                                             restore_best_weights=True,
                                                             mode=self.monitor_mode)
         self.BERT = TFBertModel.from_pretrained("nlpaueb/bert-base-greek-uncased-v1", output_attentions = True)
-        
-  #prepare inputs for bert 
+         
+  '''
+  This method returns the inputs that Bert needs: input_ids, input_masks, input_segments 
+  '''
   def to_bert_input(self, texts):
       input_ids, input_masks, input_segments = [],[],[]
       for text in tqdm(texts):
