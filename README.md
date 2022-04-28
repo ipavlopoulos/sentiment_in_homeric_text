@@ -9,7 +9,7 @@ If you find this dataset useful in your research, please consider citing:
 
     @inproceedings{Pavlopoulos2022,
 	Author = {John Pavlopoulos and Alexandros Xenos and Davide Picca},
-	Title = {Annotating the Sentiment of Homeric Text},
+	Title = {Analysing the Sentiment of Homeric Text},
 	Booktitle  = {LREC},
 	Year = {2022}
     }
