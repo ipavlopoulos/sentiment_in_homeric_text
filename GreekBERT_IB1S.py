@@ -62,7 +62,7 @@ class GreekBERT_IB1S():
     counter = 0
     for layer in self.BERT.layers:
       for l in layer.encoder.layer:
-        if counter == len(layer.encoder.layer)-3:
+        if counter == len(layer.encoder.layer)-k:
           return
         else:
           counter+=1
