@@ -44,11 +44,12 @@ class GreekBERT_IB1S():
                                                             restore_best_weights=True,
                                                             mode=self.monitor_mode)
         self.BERT = TFBertModel.from_pretrained("nlpaueb/bert-base-greek-uncased-v1", output_attentions = True)
-         
-  '''
-  This method returns the inputs that Bert needs: input_ids, input_masks, input_segments 
-  '''
+        
   def to_bert_input(self, texts):
+    """ This method returns the inputs that Bert needs: input_ids, input_masks, input_segments 
+      :param texts: the texts that will be converted into bert inputs 
+      :return: a tuple containing the input_ids, input_masks, input_segments 
+    """
       input_ids, input_masks, input_segments = [],[],[]
       for text in tqdm(texts):
         inputs = self.tokenizer.encode_plus(text, add_special_tokens=True, max_length=self.max_seq_length, pad_to_max_length=True, 
