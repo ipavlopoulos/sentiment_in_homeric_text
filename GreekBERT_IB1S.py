@@ -50,14 +50,14 @@ class GreekBERT_IB1S():
       :param texts: the texts that will be converted into bert inputs 
       :return: a tuple containing the input_ids, input_masks, input_segments 
     """
-      input_ids, input_masks, input_segments = [],[],[]
-      for text in tqdm(texts):
-        inputs = self.tokenizer.encode_plus(text, add_special_tokens=True, max_length=self.max_seq_length, pad_to_max_length=True, 
+    input_ids, input_masks, input_segments = [],[],[]
+    for text in tqdm(texts):
+      inputs = self.tokenizer.encode_plus(text, add_special_tokens=True, max_length=self.max_seq_length, pad_to_max_length=True, 
                                                   return_attention_mask=True, return_token_type_ids=True)
-        input_ids.append(inputs['input_ids'])
-        input_masks.append(inputs['attention_mask'])
-        input_segments.append(inputs['token_type_ids'])        
-      return (np.asarray(input_ids, dtype='int32'), np.asarray(input_masks, dtype='int32'), np.asarray(input_segments, dtype='int32'))
+      input_ids.append(inputs['input_ids'])
+      input_masks.append(inputs['attention_mask'])
+      input_segments.append(inputs['token_type_ids'])        
+    return (np.asarray(input_ids, dtype='int32'), np.asarray(input_masks, dtype='int32'), np.asarray(input_segments, dtype='int32'))
       
   def unfreeze_last_k_layers(self,k=3):
     counter = 0
@@ -70,45 +70,45 @@ class GreekBERT_IB1S():
           l.trainable = False
 
   def build(self, bias=0):
-        #encode text via bert 
-        in_id = tf.keras.layers.Input(shape=(self.max_seq_length,), name="input_ids", dtype='int32')
-        in_mask = tf.keras.layers.Input(shape=(self.max_seq_length,), name="input_masks", dtype='int32')
-        in_segment = tf.keras.layers.Input(shape=(self.max_seq_length,), name="segment_ids", dtype='int32')
-        bert_inputs = [in_id, in_mask, in_segment]
-        bert_output = self.BERT(bert_inputs).last_hidden_state
+    #encode text via bert 
+    in_id = tf.keras.layers.Input(shape=(self.max_seq_length,), name="input_ids", dtype='int32')
+    in_mask = tf.keras.layers.Input(shape=(self.max_seq_length,), name="input_masks", dtype='int32')
+    in_segment = tf.keras.layers.Input(shape=(self.max_seq_length,), name="segment_ids", dtype='int32')
+    bert_inputs = [in_id, in_mask, in_segment]
+    bert_output = self.BERT(bert_inputs).last_hidden_state
         
-        bert_output = bert_output[:,0,:] #take only the embedding of the CLS token
-        x = tf.keras.layers.Dense(128, activation='tanh')(bert_output)
-        pred = tf.keras.layers.Dense(4, activation=self.dense_activation, bias_initializer=tf.keras.initializers.Constant(bias))(x)
-        self.model = tf.keras.models.Model(inputs=bert_inputs, outputs=pred)
-        self.model.compile(loss=self.loss,
+    bert_output = bert_output[:,0,:] #take only the embedding of the CLS token
+    x = tf.keras.layers.Dense(128, activation='tanh')(bert_output)
+    pred = tf.keras.layers.Dense(4, activation=self.dense_activation, bias_initializer=tf.keras.initializers.Constant(bias))(x)
+    self.model = tf.keras.models.Model(inputs=bert_inputs, outputs=pred)
+    self.model.compile(loss=self.loss,
                       optimizer=tf.keras.optimizers.Adam(learning_rate=self.lr),
                       metrics=self.METRICS)
-        if self.show_summary:
-            self.model.summary()
+    if self.show_summary:
+      self.model.summary()
 
   def fit(self, train_texts, train_y,  dev_texts, dev_y,  bert_weights=None):
-        #prepare the input for bert 
-        train_input = self.to_bert_input(train_texts)
-        dev_input = self.to_bert_input(dev_texts)
-        self.build() #build model
-        if bert_weights is not None:
-            self.model.load_weights(bert_weights)
-        self.model.fit(train_input,
-                       train_y,
-                       validation_data=(dev_input, dev_y),
-                       epochs=self.epochs,
-                       callbacks=[self.earlystop],
-                       batch_size=self.batch_size,
-                       class_weight=None 
-                       )
+    #prepare the input for bert 
+     train_input = self.to_bert_input(train_texts)
+     dev_input = self.to_bert_input(dev_texts)
+     self.build() #build model
+     if bert_weights is not None:
+      self.model.load_weights(bert_weights)
+     self.model.fit(train_input,
+                    train_y,
+                    validation_data=(dev_input, dev_y),
+                    epochs=self.epochs,
+                    callbacks=[self.earlystop],
+                    batch_size=self.batch_size,
+                    class_weight=None 
+                   )
 
   def predict(self, test_texts):
-        #encode target
-        test_input = self.to_bert_input(test_texts)
-        predictions = self.model.predict(test_input)
-        print('Stopped epoch: ', self.earlystop.stopped_epoch)
-        return predictions
+    #encode target
+    test_input = self.to_bert_input(test_texts)
+    predictions = self.model.predict(test_input)
+    print('Stopped epoch: ', self.earlystop.stopped_epoch)
+    return predictions
 
   def save_weights(self, path):
     self.model.save_weights(path)
