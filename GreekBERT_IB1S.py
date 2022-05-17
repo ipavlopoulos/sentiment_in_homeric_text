@@ -1,6 +1,8 @@
 import tensorflow as tf
 from transformers import BertTokenizer, TFBertModel, BertConfig
 from tqdm import tqdm
+import numpy as np
+import pandas as pd
 
 
 class GreekBERT_IB1S():
